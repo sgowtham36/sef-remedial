@@ -23,7 +23,7 @@ import javafx.stage.Stage;
 
 public class Calculator extends Application {
 	
-	public final static double WINDOW_WIDTH = 1400;
+	public final static double WINDOW_WIDTH = 1000;
 	public final static double WINDOW_HEIGHT = 600;
 	
 	public UserInterface theGUI;

@@ -91,12 +91,13 @@ public class CalculatorValue {
 		// See if the user-entered string can be converted into an integer value
 		Scanner tempScanner = new Scanner(s.substring(start));// Create scanner for the digits
 		errorMessage=MeasuredValueRecognizer.checkMeasureValue(s.substring(start));
-		if(errorMessage=="") {
+		if(errorMessage.equals("")) {
 			measuredValue = tempScanner.nextDouble();				// Convert the value and check to see
 		}else {
 			tempScanner.close();
 			return;
 		}
+
 		if (tempScanner.hasNext()) {							// that there is nothing else is 
 			errorMessage = "***Error*** Excess data"; 		// following the value.  If so, it
 			tempScanner.close();								// is an error.  Therefore we must
@@ -104,17 +105,57 @@ public class CalculatorValue {
 			return;													
 		}
 		tempScanner.close();
+
 		errorMessage = "";
 		if (negative)										// Return the proper value based
 			measuredValue = -measuredValue;					// on the state of the flag that
+
 		if(t.length()==0) {
-			measuredValueError=0;
+			// The logic below is to automatically add an error of plus-minus 5
+			// after the significant figures of the measured value.
+
+			int numSigMV = getNumSignificantFigures(s);
+			StringBuilder sb = new StringBuilder();
+			boolean pointFound = false;
+
+			System.out.println("Number of significant digits in " + s + ": " + numSigMV);
+
+			int i = 0, j = 0;
+			while (j < numSigMV) {			// For each char in the measured value
+				if (s.charAt(i) == '.') {					// up to the number of significant digits,
+					sb.append(".");							// Copy the decimal point
+					pointFound = true;
+				}
+				else {                                        // Put in zeros for all numbers
+					sb.append("0");
+					j++;
+				}
+
+				i++;
+			}
+
+			if ((sb.toString().length() == s.length()) && !pointFound) {
+				// If all the significant digits have been covered, and there was no decimal
+				// point, then we are dealing with an integer, and we must add a decimal
+				// point before the 5.
+				sb.append(".");
+			}
+			sb.append("5");
+
+			if ((sb.toString().length() < s.length())) {
+				int toGo = s.length() - sb.toString().length();
+				for (i = 0; i < toGo; i++) {
+					sb.append("0");
+				}
+			}
+			measuredValueError=Double.parseDouble(sb.toString());
+			System.out.println("Calculated error term: " + measuredValueError);
 			errErrorMessage="";
-		}else {
+		} else {
 			// See if the user-entered string can be converted into an integer value
 			Scanner tempScanner1 = new Scanner(t);// Create scanner for the digits
 			errErrorMessage=MeasuredValueRecognizer.checkMeasureValue(t);
-			if(errErrorMessage=="") {
+			if(errErrorMessage.equals("")) {
 				measuredValueError = tempScanner1.nextDouble();				// Convert the value and check to see
 			}else {
 				tempScanner1.close();
@@ -130,8 +171,60 @@ public class CalculatorValue {
 			errErrorMessage = "";
 		}
 	}
-	
-	
+
+
+	/**
+	 * This method returns the number of significant digits in a number.
+	 * @param x - The number, in String form.
+	 * @return  - The number of significant digits in x.
+	 */
+	private int getNumSignificantFigures(String x) {
+		// This method doesn't actually do the computation.
+		if (x.indexOf('.') == -1) {
+			// First, check for a decimal point. If there isn't one, just pass the string on
+			// for computation.
+			return getNumSignificantFiguresInt(x, false);
+		} else {
+			// If there is a decimal point, then split over it.
+			String[] pieces = x.split("\\.");
+
+			// Pass the pieces on for computation.
+			int left = getNumSignificantFiguresInt(pieces[0], false),
+				right = pieces.length == 2 ? getNumSignificantFiguresInt(pieces[1], true) : 0;
+
+			// And return the sum of the results.
+			return left + right;
+		}
+	}
+
+	/**
+	 * This method performs the counting of the number of significant digits in a number.
+	 * @param x - The number. This number is assumed to be a non-negative integer.
+	 * @param afterDec - This parameter indicates whether x occurs before or after the
+	 *                   decimal point in the original number.
+	 * @return - The number of significant digits in x.
+	 */
+	private int getNumSignificantFiguresInt(String x, boolean afterDec) {
+		int left = 0, right = x.length() - 1, ans = 0;
+
+		while (left <= right && x.charAt(left) == '0')		// Ignore all leading zeros.
+			left++;
+
+		if (left > right)
+			return afterDec ? left : 0;
+
+		while (x.charAt(right) == '0') {	// For trailing zeros...
+			if (afterDec)					// If x occurs after the decimal point,
+				ans++;						// they are significant.
+			right--;						// Else, they aren't.
+		}
+
+		ans += (right - left + 1);			// Calculate the number of significant digits.
+											// The logic is that everything that's significant MUST
+											// lie between two non-zero digits.
+
+		return ans;
+	}
 
 	/**********************************************************************************************
 

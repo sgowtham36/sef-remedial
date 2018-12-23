@@ -105,6 +105,9 @@ public class EnhancedToString {
 	public String cvToString(CalculatorValue value) {
 		BigDecimal measuredValue = new BigDecimal(value.getMeasuredValue());
 		Double decimalError =value.getMeasuredValueError();
+
+		System.out.println("value: " + measuredValue + ", error: " + decimalError);
+
 		boolean measureSign = measuredValue.compareTo(zero)>=0;
 		measuredValue = measuredValue.abs();
 		MathContext mc = new MathContext(1, RoundingMode.DOWN);
