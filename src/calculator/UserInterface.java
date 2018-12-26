@@ -68,7 +68,7 @@ public class UserInterface {
 	private Button button_Sub = new Button(" -");
 	private Button button_Mpy = new Button(" *");				// The multiply symbol: \u00D7
 	private Button button_Div = new Button(" /");				// The divide symbol: \u00F7
-	private Button button_Sqr = new Button(" √");
+	private Button button_Sqr = new Button(" \u221A");
 	
 	private Label label_errOperand1 = new Label("");
 	private Label label_errOperand1error = new Label("");
